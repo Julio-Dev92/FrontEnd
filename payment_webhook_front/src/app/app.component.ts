@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Component, OnInit, inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 interface PaymentEventLog {
@@ -16,7 +17,9 @@ interface PagedResult<T> { items: T[]; page: number; pageSize: number; totalItem
 })
 export class AppComponent implements OnInit {
   private readonly http = inject(HttpClient);
-  apiUrl = 'http://localhost:5161'; apiKey = '';
+  private readonly document = inject(DOCUMENT);
+  apiUrl = ''; apiKey = '';
+  darkMode = false;
   activeTab: 'events' | 'send' = 'events';
   loading = false; sending = false; message = ''; messageType: 'success' | 'error' = 'success';
   filters = { status: '', idContrato: '', idTransacao: '' };
@@ -24,15 +27,28 @@ export class AppComponent implements OnInit {
     data_pagamento: new Date().toISOString().slice(0, 16), status: 'Pago' };
   events: PaymentEventLog[] = []; page = 1; pageSize = 10; totalItems = 0; totalPages = 0;
 
-  ngOnInit(): void { const url = sessionStorage.getItem('payment-api-url'); if (url) this.apiUrl = url; }
-  get configured(): boolean { return Boolean(this.apiUrl.trim() && this.apiKey.trim()); }
+  ngOnInit(): void {
+    const url = sessionStorage.getItem('payment-api-url');
+    if (url && url !== 'http://localhost:5161') this.apiUrl = url;
+    const savedTheme = localStorage.getItem('payment-theme');
+    this.darkMode = savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    this.applyTheme();
+  }
+
+  toggleTheme(): void {
+    this.darkMode = !this.darkMode;
+    localStorage.setItem('payment-theme', this.darkMode ? 'dark' : 'light');
+    this.applyTheme();
+  }
+  get configured(): boolean { return Boolean(this.apiKey.trim()); }
   get firstItem(): number { return this.totalItems ? (this.page - 1) * this.pageSize + 1 : 0; }
   get lastItem(): number { return Math.min(this.page * this.pageSize, this.totalItems); }
 
   loadEvents(page = 1): void {
     if (!this.configured) { this.showMessage('Informe a URL da API e a API key para consultar os eventos.', 'error'); return; }
     this.loading = true; this.message = ''; this.page = page;
-    sessionStorage.setItem('payment-api-url', this.apiUrl.trim());
+    if (this.apiUrl.trim()) sessionStorage.setItem('payment-api-url', this.apiUrl.trim());
+    else sessionStorage.removeItem('payment-api-url');
     let params = new HttpParams().set('page', page).set('pageSize', this.pageSize);
     if (this.filters.status) params = params.set('status', this.filters.status);
     if (this.filters.idContrato.trim()) params = params.set('idContrato', this.filters.idContrato.trim());
@@ -56,6 +72,7 @@ export class AppComponent implements OnInit {
   statusClass(status: string): string { return `status-${status.toLowerCase()}`; }
   statusLabel(status: string): string { return ({ Pending: 'Pendente', Processing: 'Processando', Success: 'Sucesso', Error: 'Erro', Duplicate: 'Duplicado' } as Record<string,string>)[status] ?? status; }
   private normalizedApiUrl(): string { return this.apiUrl.trim().replace(/\/$/, ''); }
+  private applyTheme(): void { this.document.body.classList.toggle('dark-theme', this.darkMode); }
   private headers(): HttpHeaders { return new HttpHeaders({ 'X-Api-Key': this.apiKey.trim() }); }
   private showMessage(message: string, type: 'success' | 'error'): void { this.message = message; this.messageType = type; }
   private errorMessage(error: any): string {

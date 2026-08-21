@@ -1,21 +1,24 @@
 <div class="app-shell">
   <aside class="sidebar">
-    <div class="brand"><span class="brand-mark">P</span><div><strong>PayFlow</strong><small>Webhook Console</small></div></div>
+    <div class="brand"><span class="brand-symbol">▲</span><div><strong>Pagamentos</strong><small>Webhook dashboard</small></div></div>
     <nav aria-label="Navegação principal">
-      <button [class.active]="activeTab === 'events'" (click)="activeTab = 'events'"><span>▦</span> Eventos</button>
-      <button [class.active]="activeTab === 'send'" (click)="activeTab = 'send'"><span>↗</span> Enviar pagamento</button>
+      <button [class.active]="activeTab === 'events'" (click)="activeTab = 'events'">Eventos</button>
+      <button [class.active]="activeTab === 'send'" (click)="activeTab = 'send'">Enviar pagamento</button>
     </nav>
     <div class="sidebar-foot"><span class="pulse"></span><div><strong>Ambiente local</strong><small>API de pagamentos</small></div></div>
   </aside>
 
   <main>
     <header>
-      <div><p class="eyebrow">OPERAÇÕES</p><h1>{{ activeTab === 'events' ? 'Eventos de pagamento' : 'Simular pagamento' }}</h1></div>
-      <div class="connection"><span [class.online]="configured"></span>{{ configured ? 'Configuração pronta' : 'Configure a conexão' }}</div>
+      <div><p class="eyebrow">DASHBOARD</p><h1>{{ activeTab === 'events' ? 'Eventos recebidos' : 'Enviar pagamento' }}</h1></div>
+      <div class="header-actions">
+        <button class="theme-toggle" (click)="toggleTheme()" [attr.aria-label]="darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'" [title]="darkMode ? 'Modo claro' : 'Modo escuro'">{{ darkMode ? '☀' : '☾' }}</button>
+        <div class="connection"><span [class.online]="configured"></span>{{ configured ? 'Configuração pronta' : 'Configure a conexão' }}</div>
+      </div>
     </header>
 
     <section class="connection-card">
-      <label><span>URL da API</span><input type="url" [(ngModel)]="apiUrl" placeholder="http://localhost:5161"></label>
+      <label><span>URL da API <small>(opcional)</small></span><input type="url" [(ngModel)]="apiUrl" placeholder="Proxy local → localhost:5161"></label>
       <label><span>API key</span><input type="password" [(ngModel)]="apiKey" placeholder="••••••••••••" autocomplete="off"></label>
       <button class="primary compact" (click)="loadEvents(1)" [disabled]="loading">{{ loading ? 'Conectando...' : 'Conectar' }}</button>
     </section>
@@ -24,7 +27,7 @@
 
     @if (activeTab === 'events') {
       <section class="panel">
-        <div class="panel-heading"><div><h2>Histórico de eventos</h2><p>Acompanhe o processamento dos webhooks recebidos.</p></div><button class="ghost" (click)="loadEvents(page)" [disabled]="loading">↻ Atualizar</button></div>
+        <div class="panel-heading"><div><h2>Histórico</h2><p>Webhooks recebidos pela API.</p></div><button class="ghost" (click)="loadEvents(page)" [disabled]="loading">Atualizar</button></div>
         <div class="filters">
           <label><span>Status</span><select [(ngModel)]="filters.status"><option value="">Todos</option><option value="Pending">Pendente</option><option value="Processing">Processando</option><option value="Success">Sucesso</option><option value="Error">Erro</option><option value="Duplicate">Duplicado</option></select></label>
           <label><span>ID do contrato</span><input [(ngModel)]="filters.idContrato" placeholder="Ex: CTR-001" (keyup.enter)="loadEvents(1)"></label>
@@ -45,7 +48,7 @@
       </section>
     } @else {
       <section class="panel form-panel">
-        <div class="panel-heading"><div><h2>Novo webhook</h2><p>Preencha os dados para simular uma notificação de pagamento.</p></div></div>
+        <div class="panel-heading"><div><h2>Novo pagamento</h2><p>Envie uma notificação para a API.</p></div></div>
         <form #paymentForm="ngForm" (ngSubmit)="sendPayment()">
           <div class="form-grid">
             <label><span>ID da transação</span><input name="transaction" [(ngModel)]="payment.id_transacao" required placeholder="TXN-2026-001"></label>

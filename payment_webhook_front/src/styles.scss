@@ -1,1 +1,26 @@
 html,body{margin:0;min-height:100%;font-family:'Inter',Arial,sans-serif;background:#f5f7fa}
+
+body.dark-theme{background:#000;color:#ededed;color-scheme:dark}
+body.dark-theme .app-shell{background:#000!important}
+body.dark-theme .sidebar{background:#0a0a0a!important;color:#ededed!important;border-color:#262626!important}
+body.dark-theme .brand small,body.dark-theme .sidebar-foot small,body.dark-theme .eyebrow,body.dark-theme .panel-heading p{color:#888!important}
+body.dark-theme nav button{color:#999!important}
+body.dark-theme nav button:hover,body.dark-theme nav button.active{color:#fff!important;background:#1f1f1f!important}
+body.dark-theme .sidebar-foot,body.dark-theme .panel,body.dark-theme .panel-heading,body.dark-theme .filters,body.dark-theme th,body.dark-theme td{border-color:#262626!important}
+body.dark-theme .connection,body.dark-theme .connection-card,body.dark-theme .panel,body.dark-theme .ghost,body.dark-theme .theme-toggle{background:#0a0a0a!important;color:#ededed!important;border-color:#262626!important}
+body.dark-theme .connection-card,body.dark-theme .filters,body.dark-theme th{background:#111!important}
+body.dark-theme input,body.dark-theme select{background:#0a0a0a!important;color:#ededed!important;border-color:#333!important}
+body.dark-theme input:focus,body.dark-theme select:focus{border-color:#ededed!important;box-shadow:0 0 0 1px #ededed!important}
+body.dark-theme input::placeholder{color:#666!important}
+body.dark-theme .primary{background:#ededed!important;color:#111!important}
+body.dark-theme .primary:hover{background:#fff!important}
+body.dark-theme .text-button,body.dark-theme td{color:#aaa!important}
+body.dark-theme tbody tr:hover{background:#111!important}
+body.dark-theme h1,body.dark-theme h2,body.dark-theme .event-id{color:#ededed!important}
+body.dark-theme .status-success{color:#45d6a9!important;background:#073b2d!important}
+body.dark-theme .status-error{color:#ff8085!important;background:#3b1013!important}
+body.dark-theme .status-pending{color:#f5c451!important;background:#352704!important}
+body.dark-theme .status-processing{color:#8ab4f8!important;background:#102a4c!important}
+body.dark-theme .status-duplicate{color:#c5a9ff!important;background:#281b45!important}
+body.dark-theme .alert{color:#45d6a9!important;background:#073b2d!important;border-color:#146b51!important}
+body.dark-theme .alert.error{color:#ff8085!important;background:#3b1013!important;border-color:#7a2429!important}

@@ -1,0 +1,12 @@
+{
+  "/api": {
+    "target": "http://localhost:5161",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/webhooks": {
+    "target": "http://localhost:5161",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
