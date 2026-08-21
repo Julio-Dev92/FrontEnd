@@ -3,6 +3,7 @@
     <div class="brand"><span class="brand-symbol">▲</span><div><strong>Pagamentos</strong><small>Webhook dashboard</small></div></div>
     <nav aria-label="Navegação principal">
       <button [class.active]="activeTab === 'events'" (click)="activeTab = 'events'">Eventos</button>
+      <button [class.active]="activeTab === 'logs'" (click)="openLogs()">Logs</button>
       <button [class.active]="activeTab === 'send'" (click)="activeTab = 'send'">Enviar pagamento</button>
     </nav>
     <div class="sidebar-foot"><span class="pulse"></span><div><strong>Ambiente local</strong><small>API de pagamentos</small></div></div>
@@ -10,7 +11,7 @@
 
   <main>
     <header>
-      <div><p class="eyebrow">DASHBOARD</p><h1>{{ activeTab === 'events' ? 'Eventos recebidos' : 'Enviar pagamento' }}</h1></div>
+      <div><p class="eyebrow">DASHBOARD</p><h1>{{ activeTab === 'events' ? 'Eventos recebidos' : activeTab === 'logs' ? 'Logs de processamento' : 'Enviar pagamento' }}</h1></div>
       <div class="header-actions">
         <button class="theme-toggle" (click)="toggleTheme()" [attr.aria-label]="darkMode ? 'Ativar modo claro' : 'Ativar modo escuro'" [title]="darkMode ? 'Modo claro' : 'Modo escuro'">{{ darkMode ? '☀' : '☾' }}</button>
         <div class="connection"><span [class.online]="configured"></span>{{ configured ? 'Configuração pronta' : 'Configure a conexão' }}</div>
@@ -45,6 +46,43 @@
           </tbody>
         </table></div>
         <footer class="pagination"><span>Mostrando {{ firstItem }}–{{ lastItem }} de {{ totalItems }}</span><div><button (click)="loadEvents(page - 1)" [disabled]="page <= 1 || loading">←</button><span>Página {{ page }}{{ totalPages ? ' de ' + totalPages : '' }}</span><button (click)="loadEvents(page + 1)" [disabled]="page >= totalPages || loading">→</button></div></footer>
+      </section>
+    } @else if (activeTab === 'logs') {
+      <section class="panel logs-panel">
+        <div class="panel-heading">
+          <div><h2>Logs da API</h2><p>Detalhes técnicos dos eventos processados.</p></div>
+          <button class="ghost" (click)="loadEvents(1)" [disabled]="loading">{{ loading ? 'Atualizando...' : 'Atualizar logs' }}</button>
+        </div>
+        <div class="log-toolbar">
+          <div class="log-filters">
+            <label><span>Status</span><select [(ngModel)]="filters.status"><option value="">Todos</option><option value="Success">Sucesso</option><option value="Error">Erro</option><option value="Pending">Pendente</option><option value="Processing">Processando</option><option value="Duplicate">Duplicado</option></select></label>
+            <label><span>ID do contrato</span><input [(ngModel)]="filters.idContrato" placeholder="Ex: CTR-001" (keyup.enter)="loadEvents(1)"></label>
+            <label><span>ID da transação</span><input [(ngModel)]="filters.idTransacao" placeholder="Ex: TXN-001" (keyup.enter)="loadEvents(1)"></label>
+            <button class="primary" (click)="loadEvents(1)">Filtrar</button>
+            <button class="text-button" (click)="clearFilters()">Limpar</button>
+          </div>
+          <span class="log-count">{{ totalItems }} registro(s)</span>
+        </div>
+        <div class="log-list">
+          @if (loading) { <div class="log-empty"><span class="spinner"></span>Carregando logs...</div> }
+          @else if (!events.length) { <div class="log-empty">Nenhum log encontrado.</div> }
+          @else { @for (event of events; track event.id) {
+            <article class="log-entry" [class.log-error]="event.processingStatus === 'Error'">
+              <div class="log-meta">
+                <span class="log-time">{{ event.receivedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+                <span class="status" [ngClass]="statusClass(event.processingStatus)">{{ statusLabel(event.processingStatus) }}</span>
+                <strong>#{{ event.id }}</strong>
+                <span>Transação: {{ event.id_transacao || '—' }}</span>
+                <span>Contrato: {{ event.id_contrato || '—' }}</span>
+              </div>
+              @if (event.errorMessage) { <div class="log-message"><strong>Erro:</strong> {{ event.errorMessage }}</div> }
+              <details>
+                <summary>Ver payload</summary>
+                <pre>{{ formatPayload(event.rawPayload) }}</pre>
+              </details>
+            </article>
+          } }
+        </div>
       </section>
     } @else {
       <section class="panel form-panel">

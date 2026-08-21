@@ -20,7 +20,7 @@ export class AppComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   apiUrl = ''; apiKey = '';
   darkMode = false;
-  activeTab: 'events' | 'send' = 'events';
+  activeTab: 'events' | 'logs' | 'send' = 'events';
   loading = false; sending = false; message = ''; messageType: 'success' | 'error' = 'success';
   filters = { status: '', idContrato: '', idTransacao: '' };
   payment = { id_transacao: '', id_contrato: '', valor: null as number | null,
@@ -71,6 +71,11 @@ export class AppComponent implements OnInit {
   }
   statusClass(status: string): string { return `status-${status.toLowerCase()}`; }
   statusLabel(status: string): string { return ({ Pending: 'Pendente', Processing: 'Processando', Success: 'Sucesso', Error: 'Erro', Duplicate: 'Duplicado' } as Record<string,string>)[status] ?? status; }
+  openLogs(): void { this.activeTab = 'logs'; if (this.configured && !this.events.length) this.loadEvents(1); }
+  formatPayload(payload: string): string {
+    try { return JSON.stringify(JSON.parse(payload), null, 2); }
+    catch { return payload; }
+  }
   private normalizedApiUrl(): string { return this.apiUrl.trim().replace(/\/$/, ''); }
   private applyTheme(): void { this.document.body.classList.toggle('dark-theme', this.darkMode); }
   private headers(): HttpHeaders { return new HttpHeaders({ 'X-Api-Key': this.apiKey.trim() }); }
