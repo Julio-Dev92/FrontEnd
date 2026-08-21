@@ -1,0 +1,62 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">P</span><div><strong>PayFlow</strong><small>Webhook Console</small></div></div>
+    <nav aria-label="Navegação principal">
+      <button [class.active]="activeTab === 'events'" (click)="activeTab = 'events'"><span>▦</span> Eventos</button>
+      <button [class.active]="activeTab === 'send'" (click)="activeTab = 'send'"><span>↗</span> Enviar pagamento</button>
+    </nav>
+    <div class="sidebar-foot"><span class="pulse"></span><div><strong>Ambiente local</strong><small>API de pagamentos</small></div></div>
+  </aside>
+
+  <main>
+    <header>
+      <div><p class="eyebrow">OPERAÇÕES</p><h1>{{ activeTab === 'events' ? 'Eventos de pagamento' : 'Simular pagamento' }}</h1></div>
+      <div class="connection"><span [class.online]="configured"></span>{{ configured ? 'Configuração pronta' : 'Configure a conexão' }}</div>
+    </header>
+
+    <section class="connection-card">
+      <label><span>URL da API</span><input type="url" [(ngModel)]="apiUrl" placeholder="http://localhost:5161"></label>
+      <label><span>API key</span><input type="password" [(ngModel)]="apiKey" placeholder="••••••••••••" autocomplete="off"></label>
+      <button class="primary compact" (click)="loadEvents(1)" [disabled]="loading">{{ loading ? 'Conectando...' : 'Conectar' }}</button>
+    </section>
+
+    @if (message) { <div class="alert" [class.error]="messageType === 'error'">{{ message }}<button (click)="message = ''" aria-label="Fechar">×</button></div> }
+
+    @if (activeTab === 'events') {
+      <section class="panel">
+        <div class="panel-heading"><div><h2>Histórico de eventos</h2><p>Acompanhe o processamento dos webhooks recebidos.</p></div><button class="ghost" (click)="loadEvents(page)" [disabled]="loading">↻ Atualizar</button></div>
+        <div class="filters">
+          <label><span>Status</span><select [(ngModel)]="filters.status"><option value="">Todos</option><option value="Pending">Pendente</option><option value="Processing">Processando</option><option value="Success">Sucesso</option><option value="Error">Erro</option><option value="Duplicate">Duplicado</option></select></label>
+          <label><span>ID do contrato</span><input [(ngModel)]="filters.idContrato" placeholder="Ex: CTR-001" (keyup.enter)="loadEvents(1)"></label>
+          <label><span>ID da transação</span><input [(ngModel)]="filters.idTransacao" placeholder="Ex: TXN-001" (keyup.enter)="loadEvents(1)"></label>
+          <button class="primary" (click)="loadEvents(1)">Filtrar</button><button class="text-button" (click)="clearFilters()">Limpar</button>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Evento</th><th>Transação</th><th>Contrato</th><th>Recebido em</th><th>Status</th><th>Detalhes</th></tr></thead>
+          <tbody>
+            @if (loading) { <tr><td colspan="6" class="empty"><span class="spinner"></span> Carregando eventos...</td></tr> }
+            @else if (!events.length) { <tr><td colspan="6" class="empty"><strong>Nenhum evento encontrado</strong><span>Conecte-se à API ou ajuste os filtros.</span></td></tr> }
+            @else { @for (event of events; track event.id) {
+              <tr><td class="event-id">#{{ event.id }}</td><td>{{ event.id_transacao || '—' }}</td><td>{{ event.id_contrato || '—' }}</td><td>{{ event.receivedAt | date:'dd/MM/yyyy HH:mm' }}</td><td><span class="status" [ngClass]="statusClass(event.processingStatus)">{{ statusLabel(event.processingStatus) }}</span></td><td><span class="error-detail" [title]="event.errorMessage || event.rawPayload">{{ event.errorMessage || 'Payload recebido' }}</span></td></tr>
+            } }
+          </tbody>
+        </table></div>
+        <footer class="pagination"><span>Mostrando {{ firstItem }}–{{ lastItem }} de {{ totalItems }}</span><div><button (click)="loadEvents(page - 1)" [disabled]="page <= 1 || loading">←</button><span>Página {{ page }}{{ totalPages ? ' de ' + totalPages : '' }}</span><button (click)="loadEvents(page + 1)" [disabled]="page >= totalPages || loading">→</button></div></footer>
+      </section>
+    } @else {
+      <section class="panel form-panel">
+        <div class="panel-heading"><div><h2>Novo webhook</h2><p>Preencha os dados para simular uma notificação de pagamento.</p></div></div>
+        <form #paymentForm="ngForm" (ngSubmit)="sendPayment()">
+          <div class="form-grid">
+            <label><span>ID da transação</span><input name="transaction" [(ngModel)]="payment.id_transacao" required placeholder="TXN-2026-001"></label>
+            <label><span>ID do contrato</span><input name="contract" [(ngModel)]="payment.id_contrato" required placeholder="CTR-001"></label>
+            <label><span>Valor</span><div class="money"><span>R$</span><input name="value" [(ngModel)]="payment.valor" required min="0.01" type="number" step="0.01" placeholder="0,00"></div></label>
+            <label><span>Data do pagamento</span><input name="date" [(ngModel)]="payment.data_pagamento" required type="datetime-local"></label>
+            <label class="wide"><span>Status do pagamento</span><select name="paymentStatus" [(ngModel)]="payment.status" required><option value="Pago">Pago</option><option value="Pendente">Pendente</option><option value="Cancelado">Cancelado</option></select></label>
+          </div>
+          <div class="form-actions"><button type="button" class="ghost" (click)="activeTab = 'events'">Cancelar</button><button class="primary" type="submit" [disabled]="paymentForm.invalid || sending">{{ sending ? 'Enviando...' : 'Enviar webhook' }}</button></div>
+        </form>
+      </section>
+    }
+  </main>
+</div>

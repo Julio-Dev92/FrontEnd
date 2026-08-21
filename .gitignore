@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Angular build and cache
+dist/
+**/dist/
+.angular/
+**/.angular/
+
+# Editors and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and local environment
+*.log
+.env
+.env.*
+!.env.example
+
+# Test output
+coverage/
+**/coverage/
